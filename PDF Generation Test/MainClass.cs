@@ -14,14 +14,17 @@ namespace PDF_Generation_Test
     {
         public static void Main(string[] args)
         {
+            // Finds User's desktop directory
             string filePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             string fileName = @"\Test.pdf";
 
+            // Paragraphs
             BaseFont bfTimes = BaseFont.CreateFont(BaseFont.TIMES_ROMAN, BaseFont.CP1252, false);
             Font times = new Font(bfTimes, 12, Font.ITALIC, Color.RED);
             Paragraph p1 = new Paragraph("This is the first paragraph");
             Paragraph p2 = new Paragraph("This is the second paragraph\n\n", times);
 
+            // Programatically generate table
             int numOfCols = 3;
             int numOfRows = 4;
             PdfPTable table = new PdfPTable(numOfCols);
@@ -36,17 +39,24 @@ namespace PDF_Generation_Test
                     table.AddCell("Row " + i + " Column " + j);
                 }
             }
+            
+            // Add elements to array and generate pdf
             IElement[] elements = { p1, p2, table };
             generateDocument(filePath + fileName, elements);
         }
         
         public static void generateDocument(string filePath, IElement[] elements)
         {
+            // Working document
             Document doc = new Document();
+            
+            // PDF writer
             PdfWriter.GetInstance(doc, new FileStream(filePath, FileMode.Create));
+            
             doc.Open();
             for (int i = 0; i < elements.Length; i++)
             {
+                // Each element is added to document
                 doc.Add(elements[i]);
             }
             doc.Close();
