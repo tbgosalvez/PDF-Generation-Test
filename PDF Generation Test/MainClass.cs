@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
+using System.Reflection;
 
 namespace PDF_Generation_Test
 {
@@ -13,29 +14,32 @@ namespace PDF_Generation_Test
     {
         public static void Main(string[] args)
         {
-            string filePath = @"C:\Users\Tim\Desktop\";
-            string fileName = "Test.pdf";
+            string filePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string fileName = @"\Test.pdf";
 
-            List<IElement> elementsList = new List<IElement>();
+            BaseFont bfTimes = BaseFont.CreateFont(BaseFont.TIMES_ROMAN, BaseFont.CP1252, false);
+            Font times = new Font(bfTimes, 12, Font.ITALIC, Color.RED);
+            Paragraph p1 = new Paragraph("This is the first paragraph");
+            Paragraph p2 = new Paragraph("This is the second paragraph\n\n", times);
+
             int numOfCols = 3;
-            int numOfRows = 3;
+            int numOfRows = 4;
             PdfPTable table = new PdfPTable(numOfCols);
-            PdfPCell header = new PdfPCell(new Phrase("Table header"));
-            header.Colspan = 3;
+            PdfPCell header = new PdfPCell(new Phrase("This is the table header"));
+            header.Colspan = numOfCols;
             header.HorizontalAlignment = 1;
             table.AddCell(header);
             for (int i = 1; i <= numOfRows; i++)
             {
-                for (int j = 1; j <= numOfRows; j++)
+                for (int j = 1; j <= numOfCols; j++)
                 {
-                    table.AddCell("Row " + i + " Col " + j);
+                    table.AddCell("Row " + i + " Column " + j);
                 }
             }
-            elementsList.Add(table);
-            IElement[] elements = elementsList.ToArray();
-
-            generateDocument(filePath+fileName, elements);
+            IElement[] elements = { p1, p2, table };
+            generateDocument(filePath + fileName, elements);
         }
+        
         public static void generateDocument(string filePath, IElement[] elements)
         {
             Document doc = new Document();
