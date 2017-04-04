@@ -45,11 +45,13 @@ namespace PDF_Generation_Test
             generateDocument(filePath + fileName, elements);
         }
         
-        public static void generateDocument(string filePath, IElement[] elements)
+        public static void generateDocument(string filePath, IElement[] elements, bool isLandscape=false)
         {
             // Working document
             Document doc = new Document();
-            
+            if(isLandscape)
+                doc.SetPageSize(PageSize.LETTER.Rotate());
+
             // PDF writer
             PdfWriter.GetInstance(doc, new FileStream(filePath, FileMode.Create));
             
