@@ -19,55 +19,71 @@ namespace PDF_Generation_Test
         {
             // Finds User's desktop directory
             string filePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string fileName = @"\Test.pdf";
+            string fileName = @"\Tables.pdf";
 
-            // Paragraphs
+            // basic elements
             BaseFont bfTimes = BaseFont.CreateFont(BaseFont.TIMES_ROMAN, BaseFont.CP1252, false);
-            Font times = new Font(bfTimes, 12, Font.ITALIC, Color.RED);
-            Paragraph p1 = new Paragraph("This is the first paragraph");
-            Paragraph p2 = new Paragraph("This is the second paragraph\n\n", times);
+            Font timesH1 = new Font(bfTimes, 22, Font.BOLD, Color.BLACK);
+            Font timesH2 = new Font(bfTimes, 14, Font.BOLD, Color.BLACK);
+            Paragraph pTitle = new Paragraph("Product Data", timesH1);
+            Paragraph spacer_0 = new Paragraph("\n\n");
 
-            // Programatically generate table
-            List<string> arrProductNum = TempDB.selectAllFrom("PARTS");
-            int nCols = TempDB.getFieldCount("PARTS");
-<<<<<<< HEAD
-            int nTotalCells = arrProductNum.Count;
-            int nRows = nTotalCells/nCols;
-=======
-            int nRows = arrProductNum.Count/nCols;
->>>>>>> 479e61725ce10c6637c7911164070fa42e43b0f8
+            // generate tables
+            OutputTable otParts = new OutputTable("PARTS");
+            OutputTable otVendors = new OutputTable("VENDORS");
+            OutputTable otShipment = new OutputTable("SHIPMENT");
 
-            PdfPTable table = new PdfPTable(nCols);
-            PdfPCell header = new PdfPCell(new Phrase(@"(LocalDB)\v11"));
+            // Add elements to array and generate pdf
+            IElement[] elements = 
+            { 
+                pTitle, spacer_0,
+                otParts.getTable(), spacer_0,
+                otVendors.getTable(), spacer_0,
+                otShipment.getTable(), spacer_0
+            };
+
+            generateDocument(filePath + fileName, elements, true);
+        }
+
+        class OutputTable
+        {
+            string strTableName;
+            int nRows, nCols, nTotalCells;
+
+            List<string> arrProductNum;
+            PdfPTable table;
+            PdfPCell header;
+
+            public PdfPTable getTable() { return table; }
+
+            public OutputTable(string tn)
+            {
+                strTableName = tn;
+
+                arrProductNum = TempDB.selectAllFrom(strTableName);
+
+                nCols = TempDB.getFieldCount(strTableName);
+                nTotalCells = arrProductNum.Count;
+                nRows = nTotalCells / nCols;
+
+                table = new PdfPTable(nCols);
+                header = new PdfPCell(new Phrase(strTableName));
             
-            header.Colspan = nCols;
-            header.HorizontalAlignment = 1;
-            table.AddCell(header);
-
-<<<<<<< HEAD
-            // fill table
-            for (int i = 0; i < nTotalCells; i+=nCols)
-            {
-                for (int j = 0; j < nCols; j++)
+                // fill table
+                header.Colspan = nCols;
+                header.HorizontalAlignment = 1;
+                table.AddCell(header);
+                for (int i = 0; i < nTotalCells; i += nCols)
                 {
-                    table.AddCell(arrProductNum[i + j]);
-=======
-            // PdfPTable is 1-based-indexed
-            for (int i = 0; i <= nRows+1; i+=nCols)
-            {
-                for (int j = 1; j <= nCols+1; j++)
-                {
-                    // but everything else is 0-based
-                    table.AddCell(arrProductNum[(i) + (j-1)]);
->>>>>>> 479e61725ce10c6637c7911164070fa42e43b0f8
+                    for (int j = 0; j < nCols; j++)
+                    {
+                        table.AddCell(arrProductNum[i + j]);
+                    }
                 }
             }
-            
-            // Add elements to array and generate pdf
-            IElement[] elements = { p1, p2, table };
-            generateDocument(filePath + fileName, elements);
         }
-        
+
+
         public static void generateDocument(string filePath, IElement[] elements, bool isLandscape=false)
         {
             // Working document
@@ -78,13 +94,21 @@ namespace PDF_Generation_Test
             // PDF writer
             PdfWriter.GetInstance(doc, new FileStream(filePath, FileMode.Create));
             
-            doc.Open();
-            for (int i = 0; i < elements.Length; i++)
+            try
             {
-                // Each element is added to document
-                doc.Add(elements[i]);
+                doc.Open();
+                for (int i = 0; i < elements.Length; i++)
+                {
+                    // Each element is added sequentially
+                    doc.Add(elements[i]);
+                }
+                doc.Close(); // throws IOException if no pages
             }
-            doc.Close();
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message + "\n" + e.StackTrace);
+            }
+
         }
     }
 }

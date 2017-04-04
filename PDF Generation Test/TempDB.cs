@@ -55,28 +55,33 @@ namespace PDF_Generation_Test
         public static List<string> selectAllFrom(string table)
         {
             List<string> arrResult = new List<string>();
+            SqlDataReader reader = null;
 
             sqlConnect.Open();
 
             SqlCommand query = new SqlCommand("SELECT * FROM " + table, sqlConnect);
 
-            SqlDataReader reader = query.ExecuteReader();
-
-            while (reader.Read())
+            try
             {
-<<<<<<< HEAD
+                reader = query.ExecuteReader();
                 for (int i = 0; i < reader.FieldCount; i++)
+                    arrResult.Add(reader.GetName(i));
+                while (reader.Read())
                 {
-                    Console.WriteLine(reader.GetString(i));
-                    arrResult.Add(reader.GetString(i));
-                }
-=======
-                for (int i = 0; i < reader.FieldCount; i++ )
-                    arrResult.Add(reader.GetString(i));
->>>>>>> 479e61725ce10c6637c7911164070fa42e43b0f8
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        Console.WriteLine(reader.GetValue(i).ToString());
+                        arrResult.Add(reader.GetValue(i).ToString());
+                    }
+                }         
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message + '\n' + e.StackTrace);
             }
 
-            reader.Close();
+            if(reader!=null)
+                reader.Close();
 
             sqlConnect.Close();
 
