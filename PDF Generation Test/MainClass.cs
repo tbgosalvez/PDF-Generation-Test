@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,8 +11,10 @@ using System.Reflection;
 
 namespace PDF_Generation_Test
 {
+
     class MainClass
     {
+
         public static void Main(string[] args)
         {
             // Finds User's desktop directory
@@ -25,18 +28,24 @@ namespace PDF_Generation_Test
             Paragraph p2 = new Paragraph("This is the second paragraph\n\n", times);
 
             // Programatically generate table
-            int numOfCols = 3;
-            int numOfRows = 4;
-            PdfPTable table = new PdfPTable(numOfCols);
-            PdfPCell header = new PdfPCell(new Phrase("This is the table header"));
-            header.Colspan = numOfCols;
+            List<string> arrProductNum = TempDB.selectAllFrom("PARTS");
+            int nCols = TempDB.getFieldCount("PARTS");
+            int nRows = arrProductNum.Count/nCols;
+
+            PdfPTable table = new PdfPTable(nCols);
+            PdfPCell header = new PdfPCell(new Phrase(@"(LocalDB)\v11"));
+            
+            header.Colspan = nCols;
             header.HorizontalAlignment = 1;
             table.AddCell(header);
-            for (int i = 1; i <= numOfRows; i++)
+
+            // PdfPTable is 1-based-indexed
+            for (int i = 0; i <= nRows+1; i+=nCols)
             {
-                for (int j = 1; j <= numOfCols; j++)
+                for (int j = 1; j <= nCols+1; j++)
                 {
-                    table.AddCell("Row " + i + " Column " + j);
+                    // but everything else is 0-based
+                    table.AddCell(arrProductNum[(i) + (j-1)]);
                 }
             }
             
