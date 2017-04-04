@@ -64,11 +64,16 @@ namespace PDF_Generation_Test
 
             while (reader.Read())
             {
+<<<<<<< HEAD
                 for (int i = 0; i < reader.FieldCount; i++)
                 {
                     Console.WriteLine(reader.GetString(i));
                     arrResult.Add(reader.GetString(i));
                 }
+=======
+                for (int i = 0; i < reader.FieldCount; i++ )
+                    arrResult.Add(reader.GetString(i));
+>>>>>>> 479e61725ce10c6637c7911164070fa42e43b0f8
             }
 
             reader.Close();
