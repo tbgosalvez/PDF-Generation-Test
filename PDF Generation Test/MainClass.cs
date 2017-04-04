@@ -18,8 +18,8 @@ namespace PDF_Generation_Test
         public static void Main(string[] args)
         {
             // Finds User's desktop directory
-            string filePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string fileName = @"\Tables.pdf";
+            //string filePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string fileName = "Tables.pdf";
 
             // basic elements
             BaseFont bfTimes = BaseFont.CreateFont(BaseFont.TIMES_ROMAN, BaseFont.CP1252, false);
@@ -28,10 +28,17 @@ namespace PDF_Generation_Test
             Paragraph pTitle = new Paragraph("Product Data", timesH1);
             Paragraph spacer_0 = new Paragraph("\n\n");
 
+            // generate csv
+            TempDB.tableToCSV("SAMPLE_TESTS", "sample_tests.csv");
+
+            // generate plots & such
+            TempDB.R_Plots("sample_tests.csv");
+
             // generate tables
             OutputTable otParts = new OutputTable("PARTS");
             OutputTable otVendors = new OutputTable("VENDORS");
             OutputTable otShipment = new OutputTable("SHIPMENT");
+            OutputTable otSampleTests = new OutputTable("SAMPLE_TESTS");
 
             // Add elements to array and generate pdf
             IElement[] elements = 
@@ -39,10 +46,11 @@ namespace PDF_Generation_Test
                 pTitle, spacer_0,
                 otParts.getTable(), spacer_0,
                 otVendors.getTable(), spacer_0,
-                otShipment.getTable(), spacer_0
+                otShipment.getTable(), spacer_0,
+                otSampleTests.getTable()
             };
 
-            generateDocument(filePath + fileName, elements, true);
+            generateDocument(fileName, elements, true);
         }
 
         class OutputTable
@@ -54,6 +62,7 @@ namespace PDF_Generation_Test
             PdfPTable table;
             PdfPCell header;
 
+            public List<string> getListProductNum() { return arrProductNum; }
             public PdfPTable getTable() { return table; }
 
             public OutputTable(string tn)
