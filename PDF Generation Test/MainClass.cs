@@ -20,6 +20,7 @@ namespace PDF_Generation_Test
             // Finds User's desktop directory
             string filePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             string fileName = @"\Tables.pdf";
+            string fileName2 = @"\tables_other.pdf";
 
             // basic elements
             BaseFont bfTimes = BaseFont.CreateFont(BaseFont.TIMES_ROMAN, BaseFont.CP1252, false);
@@ -43,6 +44,17 @@ namespace PDF_Generation_Test
             };
 
             generateDocument(filePath + fileName, elements, true);
+
+
+            // Generate different pdf
+            PdfPTable[] outputTables =
+            {
+                otParts.getTable(),
+                otVendors.getTable(),
+                otShipment.getTable()
+            };
+
+            generateDocument2(filePath+fileName2, outputTables, true);
         }
 
         class OutputTable
@@ -64,7 +76,7 @@ namespace PDF_Generation_Test
 
                 nCols = TempDB.getFieldCount(strTableName);
                 nTotalCells = arrProductNum.Count;
-                nRows = nTotalCells / nCols;
+                //nRows = nTotalCells / nCols;
 
                 table = new PdfPTable(nCols);
                 header = new PdfPCell(new Phrase(strTableName));
@@ -84,16 +96,16 @@ namespace PDF_Generation_Test
         }
 
 
-        public static void generateDocument(string filePath, IElement[] elements, bool isLandscape=false)
+        public static void generateDocument(string filePath, IElement[] elements, bool isLandscape = false)
         {
             // Working document
             Document doc = new Document();
-            if(isLandscape)
+            if (isLandscape)
                 doc.SetPageSize(PageSize.LETTER.Rotate());
 
             // PDF writer
             PdfWriter.GetInstance(doc, new FileStream(filePath, FileMode.Create));
-            
+
             try
             {
                 doc.Open();
@@ -104,6 +116,65 @@ namespace PDF_Generation_Test
                 }
                 doc.Close(); // throws IOException if no pages
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message + "\n" + e.StackTrace);
+            }
+
+        }
+
+        public static void generateDocument2(string filePath, PdfPTable[] elements, bool isLandscape=false)
+        {
+            // Working document
+            Document doc = new Document();
+            if(isLandscape)
+                doc.SetPageSize(PageSize.LETTER.Rotate());
+            doc.SetMargins(0f, 0f, 0f, 0f);
+
+            /* another way
+             * 
+             * 
+            Document doc;
+            if (isLandscape)
+            {
+                doc = new Document(PageSize.LETTER.Rotate(), 5f,5f,10f,10f);
+            }
+            else
+            {
+                doc = new Document(PageSize.LETTER);
+            }
+            */
+
+            // PDF writer
+            PdfWriter.GetInstance(doc, new FileStream(filePath, FileMode.Create));
+
+            // generic stuff
+            Paragraph spacer_0 = new Paragraph("\n\n");
+            Paragraph pLine0 = new Paragraph("hello");
+
+            // Layout Tables
+            PdfPTable tblOverviews = new PdfPTable(3);
+            PdfPCell header = new PdfPCell(new Phrase("header"));
+            header.Colspan = 3;
+            header.HorizontalAlignment = 1;
+            //tblOverviews.SpacingBefore = 0f;
+            //tblOverviews.SpacingAfter = 0f;
+            tblOverviews.AddCell(header);
+            
+            try
+            {
+                doc.Open();
+                for (int i = 0; i < elements.Length; i++)
+                {
+                    // Each element is added sequentially
+                    tblOverviews.AddCell(elements[i]);
+                }
+                doc.Add(tblOverviews);
+                doc.Add(spacer_0);
+                doc.Add(tblOverviews);
+
+                doc.Close(); // throws IOException if no pages
+            }
             catch(Exception e)
             {
                 Console.WriteLine(e.Message + "\n" + e.StackTrace);
@@ -112,3 +183,5 @@ namespace PDF_Generation_Test
         }
     }
 }
+
+   
