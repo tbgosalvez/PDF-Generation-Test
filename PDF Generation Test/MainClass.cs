@@ -21,7 +21,8 @@ namespace PDF_Generation_Test
             string filePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             string fileName = @"\Tables.pdf";
             string fileName2 = @"\tables_other.pdf";
-
+            string fileNameVideonTemplate = @"\Videon_Template.pdf";
+        /*
             // basic elements
             BaseFont bfTimes = BaseFont.CreateFont(BaseFont.TIMES_ROMAN, BaseFont.CP1252, false);
             Font timesH1 = new Font(bfTimes, 22, Font.BOLD, Color.BLACK);
@@ -54,7 +55,10 @@ namespace PDF_Generation_Test
                 otShipment.getTable()
             };
 
-            generateDocument2(filePath+fileName2, outputTables, true);
+           // generateDocument2(filePath+fileName2, outputTables, true);
+         * 
+         */
+            fillFormPDF(filePath + fileNameVideonTemplate, filePath + @"\testStamper.pdf");
         }
 
         class OutputTable
@@ -180,6 +184,28 @@ namespace PDF_Generation_Test
                 Console.WriteLine(e.Message + "\n" + e.StackTrace);
             }
 
+        }
+
+        public static void fillFormPDF(string inFile, string outFile)
+        {
+            PdfReader pr = new PdfReader(inFile);
+            PdfStamper stamp = new PdfStamper(pr, new FileStream(outFile, FileMode.Create));
+            AcroFields form = stamp.AcroFields;
+           
+            // match fields with DataTable query results
+            string[] arrTemp = new string[3];
+
+            foreach (var item in form.Fields.Keys)
+            {
+                form.SetField(item.ToString(), "hello");
+
+                Console.WriteLine(item);
+            }
+
+            Console.Read();
+
+            
+            stamp.Close();
         }
     }
 }
